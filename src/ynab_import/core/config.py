@@ -10,6 +10,8 @@ import tomli
 import tomli_w
 from platformdirs import user_config_dir
 
+from ynab_import.core.preset import Preset
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_EXPORT_PATH = str(Path.home() / "Downloads" / "ynab-exports")
