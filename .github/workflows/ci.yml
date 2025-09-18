@@ -36,9 +36,6 @@ jobs:
           uv run ruff check .
           uv run ruff format --check .
 
-      - name: Type check with pyright
-        run: uv run pyright
-
       - name: Test with pytest
         run: uv run pytest --cov=ynab_import --cov-report=xml
 

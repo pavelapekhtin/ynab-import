@@ -90,7 +90,6 @@ git push origin staging
 - Cross-platform testing (Ubuntu, Windows, macOS)
 - Python 3.12 testing
 - Linting with ruff
-- Type checking with pyright
 - Test coverage reporting
 - Package building validation
 
