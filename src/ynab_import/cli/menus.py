@@ -158,7 +158,6 @@ def path_input(
 ) -> Path | None:
     """Get path input from user with validation and ~ expansion."""
     # Show completion tips
-    console.print(f"[{COLORS['subtext']}]   💡 Use ~ for home directory[/]\n")
 
     while True:
         try:
@@ -375,10 +374,10 @@ def create_preset_menu() -> None:
     """Handle interactive preset creation."""
     display_header()
 
-    console.print("[bold]Create New Preset[/]\n")
+    console.print(f"[{COLORS['warning']} bold] Create New Preset[/]\n")
 
     # Get sample file
-    console.print("First, select a sample transaction file to analyze:")
+    console.print("  Select a sample transaction file to analyze:")
     sample_file = path_input("Path to sample file: ", must_exist=True)
 
     if not sample_file:
@@ -419,7 +418,7 @@ def create_preset_menu() -> None:
     current_data = raw_data.copy()
 
     # Ask for header skip rows
-    header_skiprows = integer_input("\nNumber of header rows to skip", default=0)
+    header_skiprows = integer_input("Number of header rows to skip", default=0)
     if header_skiprows is None:
         return
 
@@ -474,6 +473,7 @@ def create_preset_menu() -> None:
 
     # Set header from first row if needed
     should_set_header = confirm_input("Use first row as column headers?", default=True)
+
     if should_set_header is None:
         return
 
@@ -557,7 +557,7 @@ def create_preset_menu() -> None:
         choice_titles.append(choice.title)
         choice_map[choice.title] = choice.value
 
-    for i, ynab_col in enumerate(ynab_columns):
+    for _i, ynab_col in enumerate(ynab_columns):
         # Clear screen and show data preview + accumulated results
         clear_screen()
         display_dataframe_preview(

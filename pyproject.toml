@@ -5,9 +5,29 @@ build-backend = "hatchling.build"
 [project]
 name = "ynab-import"
 version = "0.1.0"
-description = "Command line application for converting bank export files to YNAB csv format"
+description = "A powerful CLI tool for converting bank export files to YNAB-compatible CSV format with interactive preset management"
 readme = "README.md"
 requires-python = ">=3.12"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Pavel Apekhtin", email = "pavelapekdev@gmail.com"},
+]
+maintainers = [
+    {name = "Pavel Apekhtin", email = "pavelapekdev@gmail.com"},
+]
+keywords = ["ynab", "budget", "finance", "csv", "bank", "import", "converter", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
 dependencies = [
     "pandas>=2.3.2",
     "pydantic>=2.11.9",
@@ -21,16 +41,13 @@ dependencies = [
     "platformdirs>=4.0.0",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/ynab_import"]
+[project.urls]
+Homepage = "https://github.com/pavelapekhtin/ynab-import"
+Repository = "https://github.com/pavelapekhtin/ynab-import"
+Documentation = "https://github.com/pavelapekhtin/ynab-import#readme"
+"Bug Tracker" = "https://github.com/pavelapekhtin/ynab-import/issues"
+Changelog = "https://github.com/pavelapekhtin/ynab-import/blob/main/CHANGELOG.md"
 
-
-[tool.commitizen]
-name = "cz_conventional_commits"
-tag_format = "$version"
-version_scheme = "pep440"
-version_provider = "uv"
-update_changelog_on_bump = true
 [project.scripts]
 ynab-import = "ynab_import.cli.menus:main_menu"
 
@@ -40,7 +57,35 @@ dev = [
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
     "ipykernel",
+    "build>=1.0.0",
+    "twine>=4.0.0",
+    "commitizen>=3.0.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ynab_import"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/tests",
+    "/.gitignore",
+    "/explore.py",
+    "/main.py",
+    "/run_cli.py",
+    "/todo.md",
+    "/uv.lock",
+    "/.python-version",
+]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "pep621"
+update_changelog_on_bump = true
+major_version_zero = true
+bump_message = "bump: version $current_version → $new_version"
 
 [tool.pyright]
 reportMissingTypeStubs = "off"
@@ -73,8 +118,6 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-
-
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 markers = [
@@ -82,10 +125,4 @@ markers = [
     "excel: marks tests as Excel-related (deselect with '-m \"not excel\"')",
     "unit: marks tests as unit tests",
     "integration: marks tests as integration tests",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.4.2",
-    "pytest-cov>=7.0.0",
 ]

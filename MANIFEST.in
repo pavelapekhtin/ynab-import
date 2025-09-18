@@ -1,0 +1,17 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include pyproject.toml
+
+# Exclude development files
+recursive-exclude tests *
+recursive-exclude .github *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+exclude .gitignore
+exclude explore.py
+exclude main.py
+exclude run_cli.py
+exclude todo.md
+exclude uv.lock
+exclude .python-version
