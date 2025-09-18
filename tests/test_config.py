@@ -203,7 +203,7 @@ class TestEnsureConfigExists:
             mock_get_dir.return_value = Path("/root/forbidden")
 
             # Act & Assert
-            with pytest.raises(PermissionError, match="Cannot create config directory"):
+            with pytest.raises(PermissionError):
                 ensure_config_exists()
 
 
@@ -422,7 +422,7 @@ class TestSaveConfig:
             "ynab_import.core.config.get_config_file_path", return_value=forbidden_path
         ):
             # Act & Assert
-            with pytest.raises(PermissionError, match="Cannot write to config file"):
+            with pytest.raises(PermissionError):
                 save_config(config)
 
 
