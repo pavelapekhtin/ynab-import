@@ -1,0 +1,41 @@
+{
+  "bulder_bank": {
+    "name": "Bulder Bank CSV",
+    "column_mappings": {
+      "Date": "Dato",
+      "Payee": "Tekst",
+      "Memo": "Type",
+      "Outflow": "Beløp",
+      "Inflow": "Beløp"
+    },
+    "header_skiprows": 0,
+    "footer_skiprows": 0,
+    "del_rows_with": ["Total", "Summary"]
+  },
+  "eurocard": {
+    "name": "Eurocard Excel",
+    "column_mappings": {
+      "Date": "Transaction Date",
+      "Payee": "Description",
+      "Memo": "Reference",
+      "Outflow": "Amount",
+      "Inflow": "Amount"
+    },
+    "header_skiprows": 2,
+    "footer_skiprows": 1,
+    "del_rows_with": ["BALANCE", "TOTAL"]
+  },
+  "sas_card": {
+    "name": "SAS Card XLS",
+    "column_mappings": {
+      "Date": "Date",
+      "Payee": "Merchant",
+      "Memo": "Category",
+      "Outflow": "Amount",
+      "Inflow": "Credit"
+    },
+    "header_skiprows": 1,
+    "footer_skiprows": 0,
+    "del_rows_with": []
+  }
+}
