@@ -12,8 +12,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Only run if the tag is pushed to main branch
-    if: github.ref_type == 'tag' && github.event.base_ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
