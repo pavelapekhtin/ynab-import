@@ -87,7 +87,7 @@ git push origin staging
 **Triggers:** Push to `main`, PRs to `main` (staging → main)
 
 **Actions:**
-- Cross-platform testing (Ubuntu, Windows, macOS)
+- Cross-platform testing (Ubuntu, macOS)
 - Python 3.12 testing
 - Linting with ruff
 - Test coverage reporting
