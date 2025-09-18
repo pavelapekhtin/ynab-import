@@ -62,11 +62,12 @@ Once you have a preset:
 
 ## Platform Compatibility
 
-Tested and working on:
-- macOS (tested on macOS 15)
-- Ubuntu Linux (tested on recent versions)
+**Supported platforms:**
+- **macOS** (tested on macOS 15)
+- **Linux** (tested on Ubuntu and other distributions)
 
-May work on other platforms but not extensively tested.
+**Not supported:**
+- Windows (not tested, may have compatibility issues)
 
 ## Requirements
 

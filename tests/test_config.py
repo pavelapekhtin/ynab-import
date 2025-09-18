@@ -197,9 +197,9 @@ class TestEnsureConfigExists:
 
     @pytest.mark.unit
     def test_ensure_config_exists_permission_error(self) -> None:
-        """Test ensure_config_exists handles permission errors."""
+        """Test ensure_config_exists handles permission errors (Unix/Linux/macOS only)."""
         with patch("ynab_import.core.config.get_config_dir") as mock_get_dir:
-            # Mock a path that would cause permission error
+            # Mock a path that would cause permission error on Unix systems
             mock_get_dir.return_value = Path("/root/forbidden")
 
             # Act & Assert
@@ -414,7 +414,7 @@ class TestSaveConfig:
 
     @pytest.mark.unit
     def test_save_config_permission_error(self) -> None:
-        """Test save_config handles permission errors."""
+        """Test save_config handles permission errors (Unix/Linux/macOS only)."""
         config = Config()
         forbidden_path = Path("/root/forbidden/config.toml")
 
