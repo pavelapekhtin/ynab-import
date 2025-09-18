@@ -87,11 +87,6 @@ update_changelog_on_bump = true
 major_version_zero = true
 bump_message = "bump: version $current_version → $new_version"
 
-[tool.pyright]
-reportMissingTypeStubs = "off"
-reportUnknownVariableType = "none"
-reportUnknownMemberType = "none"
-
 [tool.ruff]
 line-length = 88
 target-version = "py312"
