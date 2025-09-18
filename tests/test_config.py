@@ -176,7 +176,6 @@ class TestEnsureConfigExists:
         """Test ensure_config_exists loads existing config."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_dir = Path(temp_dir) / "ynab-import"
-            config_file = config_dir / "config.toml"
 
             # Create existing config
             config_dir.mkdir(parents=True)
@@ -279,7 +278,6 @@ class TestUpdateConfigValue:
         """Setup mock config environment."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_dir = Path(temp_dir) / "ynab-import"
-            config_file = config_dir / "config.toml"
             config_dir.mkdir(parents=True)
 
             # Create initial config
