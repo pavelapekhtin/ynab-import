@@ -84,11 +84,11 @@ git push origin staging
 ## 📋 GitHub Actions Workflows
 
 ### CI Workflow (`.github/workflows/ci.yml`)
-**Triggers:** Push to `main` or `staging`, PRs to `main` or `staging`
+**Triggers:** Push to `main`, PRs to `main` (staging → main)
 
 **Actions:**
 - Cross-platform testing (Ubuntu, Windows, macOS)
-- Multiple Python versions (3.12, 3.13)
+- Python 3.12 testing
 - Linting with ruff
 - Type checking with pyright
 - Test coverage reporting

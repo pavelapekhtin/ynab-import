@@ -1,6 +1,6 @@
 """YNAB Import Tool - Convert bank export files to YNAB-compatible CSV format."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Pavel Apekhtin"
 __email__ = "pavelapekdev@gmail.com"
 __description__ = (
