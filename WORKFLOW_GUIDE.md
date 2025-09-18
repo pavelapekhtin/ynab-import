@@ -88,7 +88,7 @@ git push origin staging
 
 **Actions:**
 - Cross-platform testing (Ubuntu, Windows, macOS)
-- Multiple Python versions (3.12, 3.13)
+- Python 3.12 testing
 - Linting with ruff
 - Type checking with pyright
 - Test coverage reporting
