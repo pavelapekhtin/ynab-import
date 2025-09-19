@@ -140,7 +140,9 @@ def display_header() -> None:
     console.print()
 
 
-def ask_with_menu(choices: list[str], message: str = "Select an option:") -> str | None:
+def ask_with_menu(
+    choices: list[str | questionary.Separator], message: str = "Select an option:"
+) -> str | None:
     """Display a menu and get user selection using questionary."""
     try:
         return questionary.select(
