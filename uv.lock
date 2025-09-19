@@ -1528,8 +1528,8 @@ wheels = [
 ]
 
 [[package]]
-name = "ynab-import"
-version = "0.2.9"
+name = "ynab-converter"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "ipykernel" },
