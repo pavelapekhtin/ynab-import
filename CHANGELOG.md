@@ -49,6 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/pavelapekhtin/ynab-import/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/pavelapekhtin/ynab-import/releases/tag/v0.1.0
+## v0.2.8 (2025-09-19)
+
+### Fix
+
+- **ci**: restore pyright type checking and resolve dependency issues
+
+## v0.2.8 (2025-09-19)
+
+### Fix
+
+- remove problematic release workflow
+
 ## v0.2.7 (2025-09-19)
 
 ### Fix
