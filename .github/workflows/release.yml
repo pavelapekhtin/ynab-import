@@ -43,7 +43,7 @@ jobs:
         run: uv build
 
       - name: Check package
-        run: uv run twine check dist/*
+        run: uv run --extra dev twine check dist/*
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
