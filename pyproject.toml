@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ynab-import"
-version = "0.2.8"
+version = "0.2.9"
 description = "A powerful CLI tool for converting bank export files to YNAB-compatible CSV format with interactive preset management"
 readme = "README.md"
 requires-python = ">=3.12"
