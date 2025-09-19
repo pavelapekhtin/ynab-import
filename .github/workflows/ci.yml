@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main] # Only run on main branch pushes
+    tags:
+      - "v*" # Run on version tags (from staging)
   pull_request:
-    branches: [main] # Only run on PRs to main (staging → main)
+    branches: [main] # Run on PRs to main (staging → main)
 
 jobs:
   test:

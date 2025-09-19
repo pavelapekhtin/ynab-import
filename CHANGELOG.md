@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/pavelapekhtin/ynab-import/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/pavelapekhtin/ynab-import/releases/tag/v0.1.0
+## v0.2.11 (2025-09-19)
+
+### Fix
+
+- **ci**: restructure workflows for tag-based CI and release pipeline
+
 ## v0.2.10 (2025-09-19)
 
 ### Fix
