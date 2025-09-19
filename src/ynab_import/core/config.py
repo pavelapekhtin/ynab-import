@@ -1,4 +1,4 @@
-"""Configuration management for ynab-import application."""
+"""Configuration management for ynab-converter application."""
 
 import json
 import logging
@@ -19,7 +19,7 @@ DEFAULT_EXPORT_PATH = str(Path.home() / "Downloads" / "ynab-exports")
 
 @dataclass
 class Config:
-    """Configuration data for ynab-import application."""
+    """Configuration data for ynab-converter application."""
 
     active_preset: str | None = None
     export_path: str = field(default_factory=lambda: DEFAULT_EXPORT_PATH)
@@ -44,7 +44,7 @@ class Config:
 
 def get_config_dir() -> Path:
     """Get the configuration directory path."""
-    return Path(user_config_dir("ynab-import"))
+    return Path(user_config_dir("ynab-converter"))
 
 
 def get_config_file_path() -> Path:

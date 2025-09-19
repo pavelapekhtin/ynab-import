@@ -1,7 +1,7 @@
 # YNAB Import Tool
 
-[![PyPI version](https://badge.fury.io/py/ynab-import.svg)](https://badge.fury.io/py/ynab-import)
-[![Python versions](https://img.shields.io/pypi/pyversions/ynab-import.svg)](https://pypi.org/project/ynab-import/)
+[![PyPI version](https://badge.fury.io/py/ynab-converter.svg)](https://badge.fury.io/py/ynab-converter)
+[![Python versions](https://img.shields.io/pypi/pyversions/ynab-converter.svg)](https://pypi.org/project/ynab-converter/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A command-line tool for converting bank export files (CSV, Excel) to YNAB-compatible CSV format.
@@ -17,14 +17,14 @@ A command-line tool for converting bank export files (CSV, Excel) to YNAB-compat
 ## Installation
 
 ```bash
-pip install ynab-import
+pip install ynab-converter
 ```
 
 ## Quick Start
 
 1. Run the tool:
    ```bash
-   ynab-import
+   ynab-converter
    ```
 
 2. Create a preset using a sample file from your bank
@@ -76,8 +76,8 @@ Once you have a preset:
 ## Configuration
 
 Settings and presets are saved in:
-- **Config**: `~/.config/ynab-import/config.toml`
-- **Presets**: `~/.config/ynab-import/presets/presets.json`
+- **Config**: `~/.config/ynab-converter/config.toml`
+- **Presets**: `~/.config/ynab-converter/presets/presets.json`
 - **Output**: `~/Downloads/ynab-exports/` (default)
 
 ## Development

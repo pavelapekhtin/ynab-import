@@ -117,14 +117,14 @@ class TestConfigPaths:
     def test_get_config_dir(self, mock_user_config_dir) -> None:
         """Test get_config_dir function."""
         # Arrange
-        mock_user_config_dir.return_value = "/home/user/.config/ynab-import"
+        mock_user_config_dir.return_value = "/home/user/.config/ynab-converter"
 
         # Act
         result = get_config_dir()
 
         # Assert
-        mock_user_config_dir.assert_called_once_with("ynab-import")
-        assert result == Path("/home/user/.config/ynab-import")
+        mock_user_config_dir.assert_called_once_with("ynab-converter")
+        assert result == Path("/home/user/.config/ynab-converter")
 
     @patch("ynab_import.core.config.get_config_dir")
     @pytest.mark.unit
@@ -147,7 +147,7 @@ class TestEnsureConfigExists:
     def test_ensure_config_exists_creates_new(self) -> None:
         """Test ensure_config_exists creates new config when none exists."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
             config_file = config_dir / "config.toml"
 
             with patch(
@@ -175,7 +175,7 @@ class TestEnsureConfigExists:
     def test_ensure_config_exists_loads_existing(self) -> None:
         """Test ensure_config_exists loads existing config."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
 
             # Create existing config
             config_dir.mkdir(parents=True)
@@ -277,7 +277,7 @@ class TestUpdateConfigValue:
     def mock_config_setup(self):
         """Setup mock config environment."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
             config_dir.mkdir(parents=True)
 
             # Create initial config
@@ -392,7 +392,7 @@ class TestSaveConfig:
     def test_save_config_success(self) -> None:
         """Test successful config saving."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
             config_file = config_dir / "config.toml"
             config_dir.mkdir(parents=True)
 
@@ -433,7 +433,7 @@ class TestIntegrationScenarios:
     def test_full_config_workflow(self) -> None:
         """Test complete configuration workflow."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
 
             with patch(
                 "ynab_import.core.config.get_config_dir", return_value=config_dir
@@ -467,7 +467,7 @@ class TestIntegrationScenarios:
     def test_concurrent_access_simulation(self) -> None:
         """Test that config handles multiple access patterns correctly."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            config_dir = Path(temp_dir) / "ynab-import"
+            config_dir = Path(temp_dir) / "ynab-converter"
 
             with patch(
                 "ynab_import.core.config.get_config_dir", return_value=config_dir
