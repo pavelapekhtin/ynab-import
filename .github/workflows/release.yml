@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "v*" # Release when tag is merged to main
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Verify we're on main branch
+      # Verify tag is created from main branch
       - name: Verify main branch
         run: |
           BRANCH=$(git branch -r --contains ${{ github.sha }} | grep 'origin/main' | head -1)
