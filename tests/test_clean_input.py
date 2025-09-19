@@ -13,6 +13,7 @@ from ynab_import.core.clean_input import (
     remove_header_footer,
     set_first_row_as_header,
 )
+from ynab_import.core.preset import Preset
 
 
 class TestRemoveHeaderFooter:
@@ -623,14 +624,14 @@ class TestCleanDataWithPreset:
             ]
         )
 
-        # Create a mock preset object with the required attributes
-        class MockPreset:
-            def __init__(self):
-                self.header_skiprows = 1
-                self.footer_skiprows = 1
-                self.del_rows_with = ["Total"]
-
-        preset = MockPreset()
+        # Create a preset object with the required attributes
+        preset = Preset(
+            name="test_preset",
+            column_mappings={},
+            header_skiprows=1,
+            footer_skiprows=1,
+            del_rows_with=["Total"],
+        )
 
         # Act
         from ynab_import.core.clean_input import clean_data_with_preset
@@ -657,13 +658,13 @@ class TestCleanDataWithPreset:
             ]
         )
 
-        class MockPreset:
-            def __init__(self):
-                self.header_skiprows = 0
-                self.footer_skiprows = 0
-                self.del_rows_with = ["Remove"]
-
-        preset = MockPreset()
+        preset = Preset(
+            name="test_preset",
+            column_mappings={},
+            header_skiprows=0,
+            footer_skiprows=0,
+            del_rows_with=["Remove"],
+        )
 
         # Act
         from ynab_import.core.clean_input import clean_data_with_preset
