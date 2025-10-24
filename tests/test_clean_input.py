@@ -1,11 +1,11 @@
 import sys
 from pathlib import Path
 
-import pandas as pd
-import pytest
-
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import pandas as pd
+import pytest
 
 from ynab_import.core.clean_input import (
     clean_data_pipeline,

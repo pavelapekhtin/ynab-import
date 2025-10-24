@@ -1,11 +1,12 @@
-import json
 import sys
 from pathlib import Path
 
-import pytest
-
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import json
+
+import pytest
 
 from ynab_import.file_rw.readers import read_presets_file, read_transaction_file
 
