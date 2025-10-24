@@ -73,5 +73,11 @@ class TestVersion:
 
             importlib.reload(ynab_import)
 
-            # Should fall back to hardcoded version
-            assert ynab_import.get_version() == "0.5.0"
+            # Should fall back to pyproject.toml version or "unknown"
+            fallback_version = ynab_import.get_version()
+            assert isinstance(fallback_version, str)
+            assert fallback_version != ""
+            # Should either be a valid version or "unknown"
+            assert (
+                fallback_version == "unknown" or len(fallback_version.split(".")) >= 2
+            )

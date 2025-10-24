@@ -11,8 +11,21 @@ except Exception:
 
         __version__ = version("ynab-converter")
     except Exception:
-        # Fallback version if package not installed
-        __version__ = "0.5.0"
+        # If package metadata is not available, read from pyproject.toml
+        try:
+            from pathlib import Path
+
+            import tomli
+
+            pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+            if pyproject_path.exists():
+                with open(pyproject_path, "rb") as f:
+                    data = tomli.load(f)
+                __version__ = data.get("project", {}).get("version", "unknown")
+            else:
+                __version__ = "unknown"
+        except Exception:
+            __version__ = "unknown"
 
 __author__ = "Pavel Apekhtin"
 __email__ = "pavelapekdev@gmail.com"
