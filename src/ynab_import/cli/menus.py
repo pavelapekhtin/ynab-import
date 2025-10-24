@@ -1,5 +1,6 @@
 """Complete CLI interface for YNAB import tool using questionary for interactive prompts."""
 
+import argparse
 import os
 import re
 import sys
@@ -15,6 +16,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from ynab_import import get_version
 from ynab_import.cli.ascii_art import ynab_banner
 from ynab_import.core.clean_input import (
     delete_rows_containing_text,
@@ -95,6 +97,11 @@ def display_header() -> None:
     # Display centered banner
     banner_text = Text(ynab_banner, style=COLORS["primary"])
     console.print(Align.left(banner_text))
+
+    # Display version under the banner
+    version_text = Text(f"v{get_version()}", style=COLORS["subtext"])
+    console.print(Align.left(version_text))
+    console.print()
 
     # Load config for status display
     config = ensure_config_exists()
@@ -763,6 +770,20 @@ def set_export_path_menu() -> None:
 
 def main_menu() -> None:
     """Display and handle the main menu."""
+    # Parse command line arguments first
+    parser = argparse.ArgumentParser(
+        prog="ynab-converter",
+        description="Convert bank export files to YNAB-compatible CSV format",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"%(prog)s {get_version()}"
+    )
+
+    # Only parse args if they exist (skip in interactive mode)
+    if len(sys.argv) > 1:
+        parser.parse_args()
+        return  # Exit after handling version
+
     menu_items = [
         "Convert File",
         "Select Preset",
