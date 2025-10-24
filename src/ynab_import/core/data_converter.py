@@ -1,5 +1,7 @@
 """Data converter module for transforming transaction data to YNAB format."""
 
+import warnings
+
 import pandas as pd
 
 from ynab_import.core.preset import Preset
@@ -59,7 +61,24 @@ def _format_date_column(df: pd.DataFrame) -> pd.DataFrame:
 
     # Convert to datetime if it's not already
     try:
-        df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+        # Try common date formats first to avoid the warning
+        common_formats = ["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y"]
+
+        parsed_series = None
+        for fmt in common_formats:
+            try:
+                parsed_series = pd.to_datetime(df["Date"], format=fmt, errors="raise")
+                break
+            except (ValueError, TypeError):
+                continue
+
+        # If no format worked, fall back to infer with warning suppressed
+        if parsed_series is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message="Could not infer format")
+                parsed_series = pd.to_datetime(df["Date"], errors="coerce")
+
+        df["Date"] = parsed_series
         # Format as dd-mm-yyyy
         df["Date"] = df["Date"].dt.strftime("%d-%m-%Y")
     except Exception:

@@ -3,6 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/ynab-converter.svg)](https://badge.fury.io/py/ynab-converter)
 [![Python versions](https://img.shields.io/pypi/pyversions/ynab-converter.svg)](https://pypi.org/project/ynab-converter/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/ynab-converter?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/ynab-converter)
 
 A command-line tool for converting bank export files (CSV, Excel) to YNAB-compatible CSV format.
 
@@ -42,7 +43,7 @@ When you first run the tool, you'll create a preset for your bank's file format:
 3. **Clean up data** - Remove header/footer rows if needed
 4. **Map columns** - Tell the tool which columns contain:
    - Date
-   - Payee/Description  
+   - Payee/Description
    - Amount (or separate Inflow/Outflow columns)
    - Memo (optional)
 
