@@ -1,14 +1,15 @@
-import json
 import sys
-import tempfile
-from datetime import datetime
 from pathlib import Path
-
-import pandas as pd
-import pytest
 
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import json
+import tempfile
+from datetime import datetime
+
+import pandas as pd
+import pytest
 
 from ynab_import.core.preset import Preset
 from ynab_import.file_rw.writers import (
@@ -580,7 +581,7 @@ class TestIntegrationScenarios:
 
             # Act - Export all datasets with same name
             exported_paths = []
-            for i, df in enumerate(datasets):
+            for _i, df in enumerate(datasets):
                 path = write_transactions_csv(df, output_path, name)
                 exported_paths.append(path)
 

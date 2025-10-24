@@ -91,7 +91,7 @@ uv sync --dev
 
 Run tests:
 ```bash
-pytest
+uv run pytest
 ```
 
 ## License

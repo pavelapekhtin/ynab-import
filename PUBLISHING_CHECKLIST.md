@@ -20,7 +20,7 @@ This checklist covers the steps to publish your YNAB Import Tool to PyPI.
 ### 1. ✅ Personal Information Updated
 Author information has been set to Pavel Apekhtin (pavelapekdev@gmail.com)
 
-### 2. ✅ GitHub URLs Updated  
+### 2. ✅ GitHub URLs Updated
 All URLs have been updated to use `pavelapekhtin` GitHub username
 
 ### 3. Create GitHub Repository
@@ -94,7 +94,7 @@ Use commitizen for version bumping:
 # Patch version (0.1.0 -> 0.1.1)
 cz bump --patch
 
-# Minor version (0.1.0 -> 0.2.0)  
+# Minor version (0.1.0 -> 0.2.0)
 cz bump --minor
 
 # Major version (0.1.0 -> 1.0.0)
@@ -114,7 +114,7 @@ cz bump --major
 ```
 ynab-import/
 ├── src/ynab_import/          # Main package code
-├── tests/                    # Test suite  
+├── tests/                    # Test suite
 ├── .github/                  # GitHub templates and workflows
 ├── pyproject.toml           # Package configuration
 ├── README.md                # Package documentation
