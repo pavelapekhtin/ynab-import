@@ -9,6 +9,26 @@ import pandas as pd
 from ynab_import.core.preset import Preset
 
 
+def _generate_unique_filename(output_path: Path, base_filename: str) -> Path:
+    """Generate a unique filename by adding numbers if file already exists."""
+    file_path = output_path / base_filename
+
+    if not file_path.exists():
+        return file_path
+
+    # Extract name and extension
+    stem = file_path.stem
+    suffix = file_path.suffix
+
+    counter = 1
+    while True:
+        new_filename = f"{stem}_{counter}{suffix}"
+        new_file_path = output_path / new_filename
+        if not new_file_path.exists():
+            return new_file_path
+        counter += 1
+
+
 def write_transactions_csv(df: pd.DataFrame, output_path: Path, name: str) -> Path:
     """Write transaction DataFrame to CSV file with timestamped filename."""
     if df.empty:
@@ -25,8 +45,10 @@ def write_transactions_csv(df: pd.DataFrame, output_path: Path, name: str) -> Pa
 
     # Generate filename with current date in dd-mm-yy format
     current_date = datetime.now().strftime("%d-%m-%y")
-    filename = f"{name.strip()}_{current_date}.csv"
-    file_path = output_path / filename
+    base_filename = f"{name.strip()}_{current_date}.csv"
+
+    # Generate unique filename to avoid overwriting
+    file_path = _generate_unique_filename(output_path, base_filename)
 
     # Write DataFrame to CSV
     df.to_csv(file_path, index=False, encoding="utf-8")
