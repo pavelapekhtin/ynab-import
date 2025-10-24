@@ -11,7 +11,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from ynab_import.core.preset import Preset
-from ynab_import.file_rw.writers import write_presets_json, write_transactions_csv
+from ynab_import.file_rw.writers import (
+    _generate_unique_filename,
+    write_presets_json,
+    write_transactions_csv,
+)
 
 
 class TestWriteTransactionsCsv:
@@ -122,6 +126,180 @@ class TestWriteTransactionsCsv:
                 NotADirectoryError, match="Output path is not a directory"
             ):
                 write_transactions_csv(sample_df, file_path, name)
+
+    @pytest.mark.unit
+    def test_write_transactions_csv_file_exists_numbering(
+        self, sample_df: pd.DataFrame
+    ) -> None:
+        """Test that existing files get numbered instead of overwritten."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            name = "test_transactions"
+            current_date = datetime.now().strftime("%d-%m-%y")
+            base_filename = f"{name}_{current_date}.csv"
+
+            # Create the first file
+            first_path = write_transactions_csv(sample_df, output_path, name)
+            assert first_path.name == base_filename
+            assert first_path.exists()
+
+            # Modify sample data slightly for second file
+            sample_df_modified = sample_df.copy()
+            sample_df_modified.loc[0, "Payee"] = "Modified Store"
+
+            # Act - Write second file with same name
+            second_path = write_transactions_csv(sample_df_modified, output_path, name)
+
+            # Assert
+            expected_second_filename = f"{first_path.stem}_1.csv"
+            assert second_path.name == expected_second_filename
+            assert second_path.exists()
+            assert first_path.exists()  # Original file should still exist
+
+            # Verify content is different
+            first_df = pd.read_csv(first_path)
+            second_df = pd.read_csv(second_path)
+            assert first_df.loc[0, "Payee"] == "Grocery Store"
+            assert second_df.loc[0, "Payee"] == "Modified Store"
+
+    @pytest.mark.unit
+    def test_write_transactions_csv_multiple_file_numbering(
+        self, sample_df: pd.DataFrame
+    ) -> None:
+        """Test that multiple existing files get correctly numbered."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            name = "test_transactions"
+            current_date = datetime.now().strftime("%d-%m-%y")
+            base_filename = f"{name}_{current_date}.csv"
+
+            # Create multiple files with same base name
+            paths = []
+            for i in range(4):
+                modified_df = sample_df.copy()
+                modified_df.loc[0, "Payee"] = f"Store_{i}"
+                path = write_transactions_csv(modified_df, output_path, name)
+                paths.append(path)
+
+            # Assert
+            expected_names = [
+                base_filename,
+                f"{name}_{current_date}_1.csv",
+                f"{name}_{current_date}_2.csv",
+                f"{name}_{current_date}_3.csv",
+            ]
+
+            for i, (path, expected_name) in enumerate(
+                zip(paths, expected_names, strict=False)
+            ):
+                assert path.name == expected_name
+                assert path.exists()
+
+                # Verify content is correct
+                df = pd.read_csv(path)
+                assert df.loc[0, "Payee"] == f"Store_{i}"
+
+
+class TestGenerateUniqueFilename:
+    """Tests for _generate_unique_filename helper function."""
+
+    @pytest.mark.unit
+    def test_generate_unique_filename_no_conflict(self) -> None:
+        """Test that original filename is returned when no conflict exists."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            base_filename = "test_file.csv"
+
+            # Act
+            result_path = _generate_unique_filename(output_path, base_filename)
+
+            # Assert
+            assert result_path == output_path / base_filename
+            assert result_path.name == base_filename
+
+    @pytest.mark.unit
+    def test_generate_unique_filename_single_conflict(self) -> None:
+        """Test that numbered filename is returned when original exists."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            base_filename = "test_file.csv"
+            original_path = output_path / base_filename
+
+            # Create the original file
+            original_path.touch()
+
+            # Act
+            result_path = _generate_unique_filename(output_path, base_filename)
+
+            # Assert
+            expected_filename = "test_file_1.csv"
+            assert result_path.name == expected_filename
+            assert result_path == output_path / expected_filename
+
+    @pytest.mark.unit
+    def test_generate_unique_filename_multiple_conflicts(self) -> None:
+        """Test that correct number is used when multiple files exist."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            base_filename = "test_file.csv"
+
+            # Create multiple conflicting files
+            (output_path / "test_file.csv").touch()
+            (output_path / "test_file_1.csv").touch()
+            (output_path / "test_file_2.csv").touch()
+
+            # Act
+            result_path = _generate_unique_filename(output_path, base_filename)
+
+            # Assert
+            expected_filename = "test_file_3.csv"
+            assert result_path.name == expected_filename
+            assert result_path == output_path / expected_filename
+
+    @pytest.mark.unit
+    def test_generate_unique_filename_with_extension(self) -> None:
+        """Test that extensions are handled correctly."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            base_filename = "data.xlsx"
+            original_path = output_path / base_filename
+
+            # Create the original file
+            original_path.touch()
+
+            # Act
+            result_path = _generate_unique_filename(output_path, base_filename)
+
+            # Assert
+            expected_filename = "data_1.xlsx"
+            assert result_path.name == expected_filename
+            assert result_path.suffix == ".xlsx"
+
+    @pytest.mark.unit
+    def test_generate_unique_filename_no_extension(self) -> None:
+        """Test that files without extensions are handled correctly."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            base_filename = "README"
+            original_path = output_path / base_filename
+
+            # Create the original file
+            original_path.touch()
+
+            # Act
+            result_path = _generate_unique_filename(output_path, base_filename)
+
+            # Assert
+            expected_filename = "README_1"
+            assert result_path.name == expected_filename
+            assert result_path.suffix == ""
 
 
 class TestWritePresetsJson:
@@ -376,3 +554,59 @@ class TestIntegrationScenarios:
             # Cleanup
             if output_path.exists():
                 output_path.unlink()
+
+    @pytest.mark.integration
+    def test_transaction_export_file_numbering_workflow(self) -> None:
+        """Test end-to-end workflow of exporting multiple transaction files."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Arrange
+            output_path = Path(temp_dir)
+            name = "bank_transactions"
+            current_date = datetime.now().strftime("%d-%m-%y")
+
+            # Create different transaction datasets
+            datasets = []
+            for i in range(3):
+                df = pd.DataFrame(
+                    {
+                        "Date": [f"2025-01-{i + 1:02d}", f"2025-01-{i + 2:02d}"],
+                        "Payee": [f"Store_{i}_A", f"Store_{i}_B"],
+                        "Memo": [f"Transaction {i}A", f"Transaction {i}B"],
+                        "Outflow": [100.0 + i * 10, 50.0 + i * 5],
+                        "Inflow": [0.0, 0.0],
+                    }
+                )
+                datasets.append(df)
+
+            # Act - Export all datasets with same name
+            exported_paths = []
+            for i, df in enumerate(datasets):
+                path = write_transactions_csv(df, output_path, name)
+                exported_paths.append(path)
+
+            # Assert - Verify correct numbering
+            expected_filenames = [
+                f"{name}_{current_date}.csv",
+                f"{name}_{current_date}_1.csv",
+                f"{name}_{current_date}_2.csv",
+            ]
+
+            assert len(exported_paths) == 3
+            for i, (path, expected_filename) in enumerate(
+                zip(exported_paths, expected_filenames, strict=False)
+            ):
+                assert path.exists()
+                assert path.name == expected_filename
+
+                # Verify data integrity
+                written_df = pd.read_csv(path)
+                expected_df = datasets[i]
+                pd.testing.assert_frame_equal(written_df, expected_df)
+
+                # Verify unique content
+                assert written_df.loc[0, "Payee"] == f"Store_{i}_A"
+                assert written_df.loc[1, "Payee"] == f"Store_{i}_B"
+
+            # Verify all files coexist
+            for path in exported_paths:
+                assert path.exists()
