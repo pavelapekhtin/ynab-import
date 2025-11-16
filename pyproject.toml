@@ -117,6 +117,9 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+filterwarnings = [
+    "ignore::pandas.errors.ParserWarning",
+]
 markers = [
     "csv: marks tests as CSV-related (deselect with '-m \"not csv\"')",
     "excel: marks tests as Excel-related (deselect with '-m \"not excel\"')",
