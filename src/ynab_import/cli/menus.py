@@ -336,6 +336,19 @@ def convert_file_menu() -> None:
     except Exception as e:
         console.print(f"\n[{COLORS['error']}]✗ Conversion failed:[/] {e!s}")
 
+        # Check if this is a CSV parsing error and provide helpful info
+        error_str = str(e).lower()
+        if any(
+            keyword in error_str
+            for keyword in ["tokenizing", "expected", "fields", "saw", "csv"]
+        ):
+            console.print(
+                f"\n[{COLORS['warning']}]This appears to be a CSV parsing error.[/]"
+            )
+            console.print(
+                f"[{COLORS['subtext']}]Common causes: inconsistent field counts, unescaped quotes, or delimiter issues.[/]"
+            )
+
     input("\nPress Enter to continue...")
 
 
