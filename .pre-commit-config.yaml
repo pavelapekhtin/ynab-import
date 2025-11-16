@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: uv run pytest --tb=short
+        entry: uv run pytest --tb=short --no-cov
         language: system
         pass_filenames: false
         always_run: true
