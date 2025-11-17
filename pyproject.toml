@@ -127,6 +127,45 @@ markers = [
     "integration: marks tests as integration tests",
 ]
 
+[tool.pyright]
+# Pyright configuration to ignore non-critical type checking issues
+include = ["src", "tests", "main.py", "run_cli.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.*",
+]
+
+# Type checking mode - basic is less strict than "strict"
+typeCheckingMode = "basic"
+
+# Ignore missing imports and stub files
+reportMissingImports = false
+reportMissingTypeStubs = false
+
+# Allow unknown/partially unknown types from pandas operations
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+
+# Allow private usage (sometimes needed for testing)
+reportPrivateUsage = false
+
+# Keep important checks enabled
+reportUntypedFunctionDecorator = true
+reportUntypedClassDecorator = true
+reportUntypedBaseClass = true
+reportUntypedNamedTuple = true
+reportCallInDefaultInitializer = true
+reportUnnecessaryIsInstance = false
+reportUnnecessaryCast = true
+reportAssertAlwaysTrue = true
+reportSelfClsParameterName = true
+reportImplicitStringConcatenation = false
+
+# Python version
+pythonVersion = "3.12"
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",
