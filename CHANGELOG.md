@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/pavelapekhtin/ynab-import/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/pavelapekhtin/ynab-import/releases/tag/v0.1.0
+## v0.6.2 (2025-11-17)
+
+### Fix
+
+- **pyright**: add pright configuration
+
 ## v0.6.1 (2025-11-16)
 
 ### Fix
