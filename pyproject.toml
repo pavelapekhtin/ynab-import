@@ -107,6 +107,7 @@ ignore = [
     "E501", # line too long
     "B008", # do not perform function calls in argument defaults
     "C901", # too complex
+    "RUF015", # prefer next over single element slice
 ]
 
 [tool.ruff.format]
@@ -126,6 +127,19 @@ markers = [
     "unit: marks tests as unit tests",
     "integration: marks tests as integration tests",
 ]
+
+[tool.pyright]
+reportMissingTypeStubs = false
+typeCheckingMode = "strict"
+# Disabled because pandas-stubs and questionary stubs are incomplete;
+# these rules fire on third-party code we do not control.
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportUnknownLambdaType = false
+reportMissingParameterType = false
+
 
 [dependency-groups]
 dev = [

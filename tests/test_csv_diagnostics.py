@@ -111,7 +111,7 @@ class TestCsvReadingEdgeCases:
         )
 
         excel_file = tmp_path / "test.xlsx"
-        df.to_excel(excel_file, index=False)
+        df.to_excel(excel_file, index=False)  # type: ignore[reportUnknownMemberType]
 
         result_df = read_transaction_file(excel_file)
 
