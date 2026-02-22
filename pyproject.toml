@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ynab-converter"
-version = "0.6.2"
+version = "0.6.1"
 description = "A powerful CLI tool for converting bank export files to YNAB-compatible CSV format with interactive preset management"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -107,6 +107,7 @@ ignore = [
     "E501", # line too long
     "B008", # do not perform function calls in argument defaults
     "C901", # too complex
+    "RUF015", # prefer next over single element slice
 ]
 
 [tool.ruff.format]
@@ -128,43 +129,17 @@ markers = [
 ]
 
 [tool.pyright]
-# Pyright configuration to ignore non-critical type checking issues
-include = ["src", "tests", "main.py", "run_cli.py"]
-exclude = [
-    "**/__pycache__",
-    "**/.*",
-]
-
-# Type checking mode - basic is less strict than "strict"
-typeCheckingMode = "basic"
-
-# Ignore missing imports and stub files
-reportMissingImports = false
 reportMissingTypeStubs = false
-
-# Allow unknown/partially unknown types from pandas operations
+typeCheckingMode = "strict"
+# Disabled because pandas-stubs and questionary stubs are incomplete;
+# these rules fire on third-party code we do not control.
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnknownArgumentType = false
+reportUnknownParameterType = false
 reportUnknownLambdaType = false
+reportMissingParameterType = false
 
-# Allow private usage (sometimes needed for testing)
-reportPrivateUsage = false
-
-# Keep important checks enabled
-reportUntypedFunctionDecorator = true
-reportUntypedClassDecorator = true
-reportUntypedBaseClass = true
-reportUntypedNamedTuple = true
-reportCallInDefaultInitializer = true
-reportUnnecessaryIsInstance = false
-reportUnnecessaryCast = true
-reportAssertAlwaysTrue = true
-reportSelfClsParameterName = true
-reportImplicitStringConcatenation = false
-
-# Python version
-pythonVersion = "3.12"
 
 [dependency-groups]
 dev = [

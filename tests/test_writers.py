@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
@@ -13,7 +15,7 @@ import pytest
 
 from ynab_import.core.preset import Preset
 from ynab_import.file_rw.writers import (
-    _generate_unique_filename,
+    generate_unique_filename,
     write_presets_json,
     write_transactions_csv,
 )
@@ -54,7 +56,7 @@ class TestWriteTransactionsCsv:
             assert result_path.parent == output_path
 
             # Verify CSV content
-            written_df = pd.read_csv(result_path)
+            written_df = pd.read_csv(result_path)  # type: ignore[reportUnknownMemberType]
             pd.testing.assert_frame_equal(written_df, sample_df)
 
     @pytest.mark.unit
@@ -159,8 +161,8 @@ class TestWriteTransactionsCsv:
             assert first_path.exists()  # Original file should still exist
 
             # Verify content is different
-            first_df = pd.read_csv(first_path)
-            second_df = pd.read_csv(second_path)
+            first_df = pd.read_csv(first_path)  # type: ignore[reportUnknownMemberType]
+            second_df = pd.read_csv(second_path)  # type: ignore[reportUnknownMemberType]
             assert first_df.loc[0, "Payee"] == "Grocery Store"
             assert second_df.loc[0, "Payee"] == "Modified Store"
 
@@ -177,7 +179,7 @@ class TestWriteTransactionsCsv:
             base_filename = f"{name}_{current_date}.csv"
 
             # Create multiple files with same base name
-            paths = []
+            paths: list[Path] = []
             for i in range(4):
                 modified_df = sample_df.copy()
                 modified_df.loc[0, "Payee"] = f"Store_{i}"
@@ -199,7 +201,7 @@ class TestWriteTransactionsCsv:
                 assert path.exists()
 
                 # Verify content is correct
-                df = pd.read_csv(path)
+                df = pd.read_csv(path)  # type: ignore[reportUnknownMemberType]
                 assert df.loc[0, "Payee"] == f"Store_{i}"
 
 
@@ -215,7 +217,7 @@ class TestGenerateUniqueFilename:
             base_filename = "test_file.csv"
 
             # Act
-            result_path = _generate_unique_filename(output_path, base_filename)
+            result_path = generate_unique_filename(output_path, base_filename)
 
             # Assert
             assert result_path == output_path / base_filename
@@ -234,7 +236,7 @@ class TestGenerateUniqueFilename:
             original_path.touch()
 
             # Act
-            result_path = _generate_unique_filename(output_path, base_filename)
+            result_path = generate_unique_filename(output_path, base_filename)
 
             # Assert
             expected_filename = "test_file_1.csv"
@@ -255,7 +257,7 @@ class TestGenerateUniqueFilename:
             (output_path / "test_file_2.csv").touch()
 
             # Act
-            result_path = _generate_unique_filename(output_path, base_filename)
+            result_path = generate_unique_filename(output_path, base_filename)
 
             # Assert
             expected_filename = "test_file_3.csv"
@@ -275,7 +277,7 @@ class TestGenerateUniqueFilename:
             original_path.touch()
 
             # Act
-            result_path = _generate_unique_filename(output_path, base_filename)
+            result_path = generate_unique_filename(output_path, base_filename)
 
             # Assert
             expected_filename = "data_1.xlsx"
@@ -295,7 +297,7 @@ class TestGenerateUniqueFilename:
             original_path.touch()
 
             # Act
-            result_path = _generate_unique_filename(output_path, base_filename)
+            result_path = generate_unique_filename(output_path, base_filename)
 
             # Assert
             expected_filename = "README_1"
@@ -394,7 +396,7 @@ class TestWritePresetsJson:
         ) as temp_file:
             # Arrange
             output_path = Path(temp_file.name)
-            empty_presets = {}
+            empty_presets: dict[str, Preset] = {}
 
         try:
             # Act & Assert
@@ -423,7 +425,7 @@ class TestWritePresetsJson:
             with pytest.raises(
                 TypeError, match="Value for key 'invalid' is not a Preset object"
             ):
-                write_presets_json(output_path, invalid_presets)
+                write_presets_json(output_path, invalid_presets)  # type: ignore[arg-type]
         finally:
             # Cleanup
             if output_path.exists():
@@ -566,7 +568,7 @@ class TestIntegrationScenarios:
             current_date = datetime.now().strftime("%d-%m-%y")
 
             # Create different transaction datasets
-            datasets = []
+            datasets: list[pd.DataFrame] = []
             for i in range(3):
                 df = pd.DataFrame(
                     {
@@ -580,7 +582,7 @@ class TestIntegrationScenarios:
                 datasets.append(df)
 
             # Act - Export all datasets with same name
-            exported_paths = []
+            exported_paths: list[Path] = []
             for _i, df in enumerate(datasets):
                 path = write_transactions_csv(df, output_path, name)
                 exported_paths.append(path)
@@ -600,7 +602,7 @@ class TestIntegrationScenarios:
                 assert path.name == expected_filename
 
                 # Verify data integrity
-                written_df = pd.read_csv(path)
+                written_df = pd.read_csv(path)  # type: ignore[reportUnknownMemberType]
                 expected_df = datasets[i]
                 pd.testing.assert_frame_equal(written_df, expected_df)
 
