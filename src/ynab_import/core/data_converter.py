@@ -1,32 +1,25 @@
-"""Data converter module for transforming transaction data to YNAB format."""
+from __future__ import annotations
 
 import warnings
 
 import pandas as pd
+from pandas import DataFrame
 
 from ynab_import.core.preset import Preset
 
 
-def _rename_columns(df: pd.DataFrame, mapping: dict[str, str]) -> pd.DataFrame:
-    """Rename DataFrame columns according to the provided mapping."""
-    # Create rename mapping from original columns to YNAB columns
-    rename_dict = {}
+def _rename_columns(df: DataFrame, mapping: dict[str, str]) -> DataFrame:
+    rename_dict: dict[str, str] = {}
     for ynab_col, original_col in mapping.items():
         if original_col in df.columns:
             rename_dict[original_col] = ynab_col
-
     return df.rename(columns=rename_dict)
 
 
-def _handle_single_amount_column(
-    df: pd.DataFrame, mapping: dict[str, str]
-) -> pd.DataFrame:
-    """Handle case where single column maps to both Inflow and Outflow."""
-    # Check if both Inflow and Outflow map to the same original column
+def _handle_single_amount_column(df: DataFrame, mapping: dict[str, str]) -> DataFrame:
     inflow_source = mapping.get("Inflow")
     outflow_source = mapping.get("Outflow")
 
-    # If same column maps to both Inflow and Outflow, split it
     if (
         inflow_source
         and outflow_source
@@ -36,83 +29,57 @@ def _handle_single_amount_column(
         amount_col = inflow_source
         df = df.copy()
 
-        # Create Inflow column (positive values)
-        df["Inflow"] = df[amount_col].apply(
-            lambda x: x if pd.notna(x) and x > 0 else None
+        df["Inflow"] = df[amount_col].apply(  # type: ignore[index]
+            lambda x: x if pd.notna(x) and float(x) > 0 else None  # type: ignore[arg-type]
         )
-
-        # Create Outflow column (negative values, made positive)
-        df["Outflow"] = df[amount_col].apply(
-            lambda x: abs(x) if pd.notna(x) and x < 0 else None
+        df["Outflow"] = df[amount_col].apply(  # type: ignore[index]
+            lambda x: abs(float(x)) if pd.notna(x) and float(x) < 0 else None  # type: ignore[arg-type]
         )
-
-        # Remove the original column
         df = df.drop(columns=[amount_col])
 
     return df
 
 
-def _format_date_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Format the Date column to dd-mm-yyyy format."""
+def _format_date_column(df: DataFrame) -> DataFrame:
     if "Date" not in df.columns:
         return df
 
     df = df.copy()
 
-    # Convert to datetime if it's not already
     try:
-        # Try common date formats first to avoid the warning
         common_formats = ["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y"]
 
-        parsed_series = None
+        parsed_series: pd.Series | None = None
         for fmt in common_formats:
             try:
-                parsed_series = pd.to_datetime(df["Date"], format=fmt, errors="raise")
+                parsed_series = pd.to_datetime(df["Date"], format=fmt, errors="raise")  # type: ignore[assignment]
                 break
             except (ValueError, TypeError):
                 continue
 
-        # If no format worked, fall back to infer with warning suppressed
         if parsed_series is None:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", message="Could not infer format")
-                parsed_series = pd.to_datetime(df["Date"], errors="coerce")
+                parsed_series = pd.to_datetime(df["Date"], errors="coerce")  # type: ignore[assignment]
 
         df["Date"] = parsed_series
-        # Format as dd-mm-yyyy
-        df["Date"] = df["Date"].dt.strftime("%d-%m-%Y")
+        df["Date"] = df["Date"].dt.strftime("%d-%m-%Y")  # type: ignore[union-attr]
     except Exception:
-        # If conversion fails, leave as-is
         pass
 
     return df
 
 
-def _filter_mapped_columns(df: pd.DataFrame, mapping: dict[str, str]) -> pd.DataFrame:
-    """Keep only columns that are mapped to YNAB columns."""
-    # Get YNAB column names in desired order
+def _filter_mapped_columns(df: DataFrame, mapping: dict[str, str]) -> DataFrame:
     ynab_columns = ["Date", "Payee", "Memo", "Inflow", "Outflow"]
-
-    # Keep only columns that exist and are YNAB columns, in the correct order
     columns_to_keep = [col for col in ynab_columns if col in df.columns]
+    return df[columns_to_keep]  # type: ignore[return-value]
 
-    return df[columns_to_keep]  # type: ignore
 
-
-def convert_to_ynab(input_df: pd.DataFrame, preset: Preset) -> pd.DataFrame:
-    """Convert input DataFrame to YNAB format according to preset mapping."""
+def convert_to_ynab(input_df: DataFrame, preset: Preset) -> DataFrame:
     df = input_df.copy()
-
-    # Step 1: Handle single amount column before renaming
     df = _handle_single_amount_column(df, preset.column_mappings)
-
-    # Step 2: Rename columns according to mapping
     df = _rename_columns(df, preset.column_mappings)
-
-    # Step 3: Format date column to dd-mm-yyyy
     df = _format_date_column(df)
-
-    # Step 4: Keep only mapped YNAB columns
     df = _filter_mapped_columns(df, preset.column_mappings)
-
     return df

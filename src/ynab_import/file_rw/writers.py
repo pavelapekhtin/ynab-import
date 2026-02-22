@@ -9,7 +9,7 @@ import pandas as pd
 from ynab_import.core.preset import Preset
 
 
-def _generate_unique_filename(output_path: Path, base_filename: str) -> Path:
+def generate_unique_filename(output_path: Path, base_filename: str) -> Path:
     """Generate a unique filename by adding numbers if file already exists."""
     file_path = output_path / base_filename
 
@@ -48,7 +48,7 @@ def write_transactions_csv(df: pd.DataFrame, output_path: Path, name: str) -> Pa
     base_filename = f"{name.strip()}_{current_date}.csv"
 
     # Generate unique filename to avoid overwriting
-    file_path = _generate_unique_filename(output_path, base_filename)
+    file_path = generate_unique_filename(output_path, base_filename)
 
     # Write DataFrame to CSV
     df.to_csv(file_path, index=False, encoding="utf-8")
@@ -61,9 +61,8 @@ def write_presets_json(output_path: Path, presets: dict[str, Preset]) -> Path:
     if not presets:
         raise ValueError("Presets dictionary cannot be empty")
 
-    # Validate all values are Preset objects
     for key, preset in presets.items():
-        if not isinstance(preset, Preset):
+        if not isinstance(preset, Preset):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise TypeError(f"Value for key '{key}' is not a Preset object")
 
     # Ensure parent directory exists

@@ -19,26 +19,25 @@ DEFAULT_EXPORT_PATH = str(Path.home() / "Downloads" / "ynab-exports")
 
 @dataclass
 class Config:
-    """Configuration data for ynab-converter application."""
-
     active_preset: str | None = None
     export_path: str = field(default_factory=lambda: DEFAULT_EXPORT_PATH)
+    input_folder: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert Config to dictionary for TOML serialization."""
-        data = {}
-        # Only include active_preset if it's not None (TOML doesn't support None)
+        data: dict[str, Any] = {}
         if self.active_preset is not None:
             data["active_preset"] = self.active_preset
         data["export_path"] = self.export_path
+        if self.input_folder is not None:
+            data["input_folder"] = self.input_folder
         return data
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":
-        """Create Config from dictionary loaded from TOML."""
         return cls(
             active_preset=data.get("active_preset"),
             export_path=data.get("export_path", DEFAULT_EXPORT_PATH),
+            input_folder=data.get("input_folder"),
         )
 
 
@@ -118,6 +117,10 @@ def update_config_value(key: str, value: Any) -> Config:
         if not isinstance(value, str | Path):
             raise ValueError("export_path must be a string or Path")
         config.export_path = str(value)
+    elif key == "input_folder":
+        if value is not None and not isinstance(value, str | Path):
+            raise ValueError("input_folder must be a string, Path, or None")
+        config.input_folder = str(value) if value is not None else None
     else:
         raise ValueError(f"Unknown configuration key: {key}")
 
