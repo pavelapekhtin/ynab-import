@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import sys
+from collections.abc import Generator
 from pathlib import Path
 
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import tempfile
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import tomli
@@ -99,7 +102,7 @@ class TestConfig:
     def test_config_from_dict_empty(self) -> None:
         """Test Config from_dict with empty dictionary."""
         # Arrange
-        data = {}
+        data: dict[str, object] = {}
 
         # Act
         config = Config.from_dict(data)
@@ -115,7 +118,7 @@ class TestConfigPaths:
 
     @patch("ynab_import.core.config.user_config_dir")
     @pytest.mark.unit
-    def test_get_config_dir(self, mock_user_config_dir) -> None:
+    def test_get_config_dir(self, mock_user_config_dir: MagicMock) -> None:
         """Test get_config_dir function."""
         # Arrange
         mock_user_config_dir.return_value = "/home/user/.config/ynab-converter"
@@ -129,7 +132,7 @@ class TestConfigPaths:
 
     @patch("ynab_import.core.config.get_config_dir")
     @pytest.mark.unit
-    def test_get_config_file_path(self, mock_get_config_dir) -> None:
+    def test_get_config_file_path(self, mock_get_config_dir: MagicMock) -> None:
         """Test get_config_file_path function."""
         # Arrange
         mock_get_config_dir.return_value = Path("/test/config/dir")
@@ -275,7 +278,7 @@ class TestUpdateConfigValue:
     """Tests for update_config_value function."""
 
     @pytest.fixture
-    def mock_config_setup(self):
+    def mock_config_setup(self) -> Generator[Path, None, None]:
         """Setup mock config environment."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_dir = Path(temp_dir) / "ynab-converter"
@@ -290,7 +293,7 @@ class TestUpdateConfigValue:
                 yield config_dir
 
     @pytest.mark.unit
-    def test_update_config_active_preset(self, mock_config_setup) -> None:
+    def test_update_config_active_preset(self, mock_config_setup: Path) -> None:
         """Test updating active_preset configuration."""
         config_dir = mock_config_setup
 
@@ -306,7 +309,7 @@ class TestUpdateConfigValue:
             assert loaded_config.active_preset == "new_preset"
 
     @pytest.mark.unit
-    def test_update_config_active_preset_to_none(self, mock_config_setup) -> None:
+    def test_update_config_active_preset_to_none(self, mock_config_setup: Path) -> None:
         """Test setting active_preset to None."""
         config_dir = mock_config_setup
 
@@ -318,7 +321,7 @@ class TestUpdateConfigValue:
             assert updated_config.active_preset is None
 
     @pytest.mark.unit
-    def test_update_config_export_path(self, mock_config_setup) -> None:
+    def test_update_config_export_path(self, mock_config_setup: Path) -> None:
         """Test updating export_path configuration."""
         config_dir = mock_config_setup
         new_path = "/new/export/path"
@@ -336,7 +339,7 @@ class TestUpdateConfigValue:
 
     @pytest.mark.unit
     def test_update_config_export_path_with_path_object(
-        self, mock_config_setup
+        self, mock_config_setup: Path
     ) -> None:
         """Test updating export_path with Path object."""
         config_dir = mock_config_setup
@@ -350,7 +353,7 @@ class TestUpdateConfigValue:
             assert updated_config.export_path == str(new_path)
 
     @pytest.mark.unit
-    def test_update_config_invalid_key(self, mock_config_setup) -> None:
+    def test_update_config_invalid_key(self, mock_config_setup: Path) -> None:
         """Test updating with invalid configuration key."""
         config_dir = mock_config_setup
 
@@ -362,7 +365,7 @@ class TestUpdateConfigValue:
                 update_config_value("invalid_key", "some_value")
 
     @pytest.mark.unit
-    def test_update_config_invalid_preset_type(self, mock_config_setup) -> None:
+    def test_update_config_invalid_preset_type(self, mock_config_setup: Path) -> None:
         """Test updating active_preset with invalid type."""
         config_dir = mock_config_setup
 
@@ -374,7 +377,7 @@ class TestUpdateConfigValue:
                 update_config_value("active_preset", 123)
 
     @pytest.mark.unit
-    def test_update_config_invalid_path_type(self, mock_config_setup) -> None:
+    def test_update_config_invalid_path_type(self, mock_config_setup: Path) -> None:
         """Test updating export_path with invalid type."""
         config_dir = mock_config_setup
 

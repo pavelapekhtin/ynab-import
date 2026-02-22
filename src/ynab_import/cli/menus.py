@@ -83,7 +83,7 @@ def center_text(text: str, width: int | None = None) -> str:
     if width is None:
         width = get_terminal_width()
     lines = text.strip().split("\n")
-    centered_lines = []
+    centered_lines: list[str] = []
     for line in lines:
         padding = (width - len(line)) // 2
         centered_lines.append(" " * padding + line)
@@ -109,6 +109,7 @@ def display_header() -> None:
     # Status panel
     preset_status: str
     path_status: str
+    input_folder_status: str
 
     # Active preset
     if config.active_preset:
@@ -127,6 +128,12 @@ def display_header() -> None:
     else:
         path_status = f"[{COLORS['error']}]Not set[/]"
 
+    # Input folder
+    if config.input_folder:
+        input_folder_status = f"[{COLORS['secondary']}]{config.input_folder}[/]"
+    else:
+        input_folder_status = f"[{COLORS['subtext']}]Not set[/]"
+
     preset_status_panel = Panel(
         Align.center(preset_status),
         title="[bold]Active Preset",
@@ -135,13 +142,23 @@ def display_header() -> None:
     )
 
     export_path_status_panel = Panel(
-        (path_status),
+        path_status,
         title="[bold]Export Path",
         border_style=COLORS["secondary"],
         padding=(1, 1),
     )
 
-    columns = Columns([preset_status_panel, export_path_status_panel], equal=True)
+    input_folder_status_panel = Panel(
+        input_folder_status,
+        title="[bold]Input Folder",
+        border_style=COLORS["primary"],
+        padding=(1, 1),
+    )
+
+    columns = Columns(
+        [preset_status_panel, export_path_status_panel, input_folder_status_panel],
+        equal=True,
+    )
 
     console.print(Align.left(columns))
     console.print()
@@ -163,18 +180,19 @@ def ask_with_menu(
 
 
 def path_input(
-    message: str = "Enter path: ", must_exist: bool = False, is_directory: bool = False
+    message: str = "Enter path: ",
+    must_exist: bool = False,
+    is_directory: bool = False,
+    default: str | None = None,
 ) -> Path | None:
-    """Get path input from user with validation and ~ expansion."""
-    # Show completion tips
-
+    resolved_default = (default.rstrip("/") + "/") if default else ""
     while True:
         try:
             user_input = questionary.path(
                 message,
                 only_directories=is_directory,
                 style=QUESTIONARY_THEME,
-                # instruction=" ",
+                default=resolved_default,
             ).ask()
 
             if not user_input:
@@ -295,7 +313,11 @@ def convert_file_menu() -> None:
 
     # Get input file
     console.print("\n[bold green]   Select input file to convert: [/]")
-    input_file = path_input(" Path to transaction file: ", must_exist=True)
+    input_file = path_input(
+        " Path to transaction file: ",
+        must_exist=True,
+        default=config.input_folder,
+    )
 
     if not input_file:
         return
@@ -366,19 +388,19 @@ def select_preset_menu() -> None:
 
     console.print(f"[{COLORS['warning']}]   Available Presets:[/]\n")
 
-    preset_choices = []
+    preset_choices: list[Choice] = []
     for key, preset in presets.items():
         preset_choices.append(Choice(preset.name, value=key))
 
     preset_choices.append(Choice("← Back to Main Menu", value=None))
 
-    selection = ask_with_menu([choice.title for choice in preset_choices], " ")
+    selection = ask_with_menu([str(choice.title) for choice in preset_choices], " ")
 
     if selection and selection != "← Back to Main Menu":
         # Find the corresponding key
         preset_key = None
         for choice in preset_choices:
-            if choice.title == selection:
+            if str(choice.title) == selection:
                 preset_key = choice.value
                 break
 
@@ -398,9 +420,15 @@ def create_preset_menu() -> None:
 
     console.print(f"[{COLORS['warning']} bold] Create New Preset[/]\n")
 
+    config = ensure_config_exists()
+
     # Get sample file
     console.print("  Select a sample transaction file to analyze:")
-    sample_file = path_input("Path to sample file: ", must_exist=True)
+    sample_file = path_input(
+        "Path to sample file: ",
+        must_exist=True,
+        default=config.input_folder,
+    )
 
     if not sample_file:
         return
@@ -436,7 +464,7 @@ def create_preset_menu() -> None:
         return
 
     # Initialize preset data
-    column_mappings = {}
+    column_mappings: dict[str, str] = {}
     current_data = raw_data.copy()
 
     # Ask for header skip rows
@@ -464,7 +492,7 @@ def create_preset_menu() -> None:
 
     # Ask about row deletion
     console.print(f"\n[{COLORS['secondary']}]Row Deletion Setup[/]")
-    del_rows_with = []
+    del_rows_with: list[str] = []
 
     should_delete_rows = confirm_input(
         "Do you want to delete rows containing specific text?", default=False
@@ -525,10 +553,10 @@ def create_preset_menu() -> None:
     console.print(f"\n[{COLORS['secondary']}]Column Mapping[/]\n")
 
     ynab_columns = ["Date", "Payee", "Memo", "Inflow", "Outflow"]
-    mapping_results = []  # Store results for display
+    mapping_results: list[str] = []  # Store results for display
 
     # Build choices for all columns
-    choices = []
+    choices: list[Choice] = []
     for col in current_data.columns:
         if len(current_data) > 0:
             try:
@@ -572,12 +600,12 @@ def create_preset_menu() -> None:
     choices.append(Choice("Skip this column", value=None))
 
     # Create a mapping dictionary for easier lookup
-    choice_map = {}
-    choice_titles = []
+    choice_map: dict[str, str | None] = {}
+    choice_titles: list[str] = []
 
     for choice in choices:
-        choice_titles.append(choice.title)
-        choice_map[choice.title] = choice.value
+        choice_titles.append(str(choice.title))
+        choice_map[str(choice.title)] = choice.value
 
     for _i, ynab_col in enumerate(ynab_columns):
         # Clear screen and show data preview + accumulated results
@@ -693,14 +721,14 @@ def delete_preset_menu() -> None:
 
     console.print("[bold red]   Delete Preset[/]\n")
 
-    preset_choices = []
+    preset_choices: list[Choice] = []
     for key, preset in presets.items():
         preset_choices.append(Choice(preset.name, value=key))
 
     preset_choices.append(Choice("← Back to Main Menu", value=None))
 
     selection = ask_with_menu(
-        [choice.title for choice in preset_choices],
+        [str(choice.title) for choice in preset_choices],
         "",
     )
 
@@ -708,7 +736,7 @@ def delete_preset_menu() -> None:
         # Find the corresponding key
         preset_key = None
         for choice in preset_choices:
-            if choice.title == selection:
+            if str(choice.title) == selection:
                 preset_key = choice.value
                 break
 
@@ -740,6 +768,42 @@ def delete_preset_menu() -> None:
                     console.print(f"\n[{COLORS['error']}]Failed to delete preset![/]")
 
             input("\nPress Enter to continue...")
+
+
+def set_input_folder_menu() -> None:
+    display_header()
+
+    config = ensure_config_exists()
+
+    console.print("[bold]   Set Input Folder[/]\n")
+
+    if config.input_folder:
+        console.print(
+            f"   Current input folder: [{COLORS['primary']}]{config.input_folder}[/]\n"
+        )
+    else:
+        console.print(f"   Current input folder: [{COLORS['subtext']}]Not set[/]\n")
+
+    console.print("   Select default input directory for file pickers:")
+    new_path = path_input(
+        " Input folder path: ",
+        must_exist=False,
+        is_directory=True,
+        default=config.input_folder,
+    )
+
+    if not new_path:
+        return
+
+    try:
+        update_config_value("input_folder", str(new_path))
+        console.print(
+            f"\n[{COLORS['success']}]✓ Input folder updated to:[/] {new_path}"
+        )
+    except (OSError, ValueError) as e:
+        console.print(f"\n[{COLORS['error']}]Failed to set input folder:[/] {e}")
+
+    input("\nPress Enter to continue...")
 
 
 def set_export_path_menu() -> None:
@@ -804,6 +868,7 @@ def main_menu() -> None:
         "Create Preset",
         "Delete Preset",
         "Set Export Path",
+        "Set Input Folder",
         questionary.Separator("  "),
         "Exit",
     ]
@@ -825,6 +890,8 @@ def main_menu() -> None:
             delete_preset_menu()
         elif selection == "Set Export Path":
             set_export_path_menu()
+        elif selection == "Set Input Folder":
+            set_input_folder_menu()
         elif selection == "Exit":
             clear_screen()
             console.print(f"[{COLORS['success']}]Thanks for using YNAB Import Tool![/]")
