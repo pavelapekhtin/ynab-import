@@ -324,6 +324,7 @@ class TestWritePresetsJson:
                 header_skiprows=0,
                 footer_skiprows=0,
                 del_rows_with=["Total", "Summary"],
+                header_mode="fixed",
             ),
             "eurocard": Preset(
                 name="Eurocard Excel",
@@ -337,6 +338,7 @@ class TestWritePresetsJson:
                 header_skiprows=2,
                 footer_skiprows=1,
                 del_rows_with=["BALANCE", "TOTAL"],
+                header_mode="auto",
             ),
         }
 
@@ -373,6 +375,7 @@ class TestWritePresetsJson:
             assert bulder_data["header_skiprows"] == 0
             assert bulder_data["footer_skiprows"] == 0
             assert bulder_data["del_rows_with"] == ["Total", "Summary"]
+            assert bulder_data["header_mode"] == "fixed"
             assert bulder_data["column_mappings"]["Date"] == "Dato"
 
             # Check eurocard preset
@@ -380,6 +383,7 @@ class TestWritePresetsJson:
             assert eurocard_data["name"] == "Eurocard Excel"
             assert eurocard_data["header_skiprows"] == 2
             assert eurocard_data["footer_skiprows"] == 1
+            assert eurocard_data["header_mode"] == "auto"
             assert "BALANCE" in eurocard_data["del_rows_with"]
             assert "TOTAL" in eurocard_data["del_rows_with"]
 
@@ -532,6 +536,7 @@ class TestIntegrationScenarios:
                     header_skiprows=1,
                     footer_skiprows=2,
                     del_rows_with=["SKIP", "IGNORE"],
+                    header_mode="auto",
                 )
             }
 
@@ -552,6 +557,7 @@ class TestIntegrationScenarios:
             assert original.header_skiprows == read_back.header_skiprows
             assert original.footer_skiprows == read_back.footer_skiprows
             assert original.del_rows_with == read_back.del_rows_with
+            assert original.header_mode == read_back.header_mode
 
         finally:
             # Cleanup

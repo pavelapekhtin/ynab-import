@@ -29,6 +29,8 @@ from ynab_import.core.config import (
     save_preset,
     update_config_value,
 )
+from ynab_import.core.diagnostics import ConversionError, ConversionWarning
+from ynab_import.core.header_detection import suggest_header_row
 from ynab_import.core.pipeline import convert_file_with_preset, preview_conversion
 from ynab_import.core.preset import Preset
 from ynab_import.file_rw.readers import read_transaction_file
@@ -286,6 +288,40 @@ def display_dataframe_preview(df: pd.DataFrame, title: str, max_rows: int = 10) 
     console.print(table)
 
 
+def display_conversion_warnings(warnings: list[ConversionWarning]) -> None:
+    for warning in warnings:
+        console.print(f"[{COLORS['warning']}]Warning:[/] {warning.message}")
+
+
+def display_conversion_diagnostics(error: ConversionError) -> None:
+    console.print(f"\n[{COLORS['error']}]✗ Conversion failed:[/] {error.summary}")
+    console.print(f"[{COLORS['warning']}]Stage:[/] {error.stage}")
+    if error.preset_name:
+        console.print(f"[{COLORS['secondary']}]Preset:[/] {error.preset_name}")
+    console.print(f"[{COLORS['subtext']}]Expected:[/] {error.expected}")
+    console.print(f"[{COLORS['text']}]Actual:[/] {error.actual}")
+
+    if error.columns:
+        console.print(
+            f"[{COLORS['secondary']}]Relevant columns:[/] {', '.join(error.columns)}"
+        )
+
+    if error.excerpt:
+        excerpt_table = Table(
+            title="Relevant Data Excerpt",
+            style=COLORS["surface"],
+        )
+        for column in error.excerpt[0]:
+            excerpt_table.add_column(
+                column,
+                style=COLORS["primary"],
+                header_style=COLORS["secondary"],
+            )
+        for row in error.excerpt:
+            excerpt_table.add_row(*(row.get(column, "") for column in row))
+        console.print(excerpt_table)
+
+
 def convert_file_menu() -> None:
     """Handle file conversion."""
     display_header()
@@ -345,18 +381,19 @@ def convert_file_menu() -> None:
 
         console.print(f"\n[{COLORS['secondary']}]Converting file...[/]")
 
-        output_path = convert_file_with_preset(
+        conversion_result = convert_file_with_preset(
             input_file, preset, output_dir, output_name
         )
 
         console.print(f"\n[{COLORS['success']}]✓ Conversion completed successfully![/]")
-        console.print(f"[{COLORS['text']}]Saved to:[/] {output_path}")
+        console.print(f"[{COLORS['text']}]Saved to:[/] {conversion_result.output_path}")
         console.print(
-            f"[{COLORS['subtext']}]File size:[/] {output_path.stat().st_size} bytes"
+            f"[{COLORS['subtext']}]File size:[/] {conversion_result.output_path.stat().st_size} bytes"
         )
+        display_conversion_warnings(conversion_result.warnings)
 
-    except Exception as e:
-        console.print(f"\n[{COLORS['error']}]✗ Conversion failed:[/] {e!s}")
+    except ConversionError as e:
+        display_conversion_diagnostics(e)
 
         # Check if this is a CSV parsing error and provide helpful info
         error_str = str(e).lower()
@@ -370,6 +407,8 @@ def convert_file_menu() -> None:
             console.print(
                 f"[{COLORS['subtext']}]Common causes: inconsistent field counts, unescaped quotes, or delimiter issues.[/]"
             )
+    except Exception as e:
+        console.print(f"\n[{COLORS['error']}]✗ Conversion failed:[/] {e!s}")
 
     input("\nPress Enter to continue...")
 
@@ -467,8 +506,22 @@ def create_preset_menu() -> None:
     column_mappings: dict[str, str] = {}
     current_data = raw_data.copy()
 
-    # Ask for header skip rows
-    header_skiprows = integer_input("Number of header rows to skip", default=0)
+    header_mode_choice = questionary.select(
+        "How should this preset find the header row?",
+        choices=["Fixed header rows", "Auto-detect header row"],
+        style=QUESTIONARY_THEME,
+    ).ask()
+    if header_mode_choice is None:
+        return
+
+    header_mode = "auto" if header_mode_choice == "Auto-detect header row" else "fixed"
+
+    header_skiprows_prompt = (
+        "Fallback number of header rows to skip if auto-detection fails"
+        if header_mode == "auto"
+        else "Number of header rows to skip"
+    )
+    header_skiprows = integer_input(header_skiprows_prompt, default=0)
     if header_skiprows is None:
         return
 
@@ -477,8 +530,25 @@ def create_preset_menu() -> None:
     if footer_skiprows is None:
         return
 
-    # Apply header/footer removal and show preview
-    if header_skiprows > 0 or footer_skiprows > 0:
+    should_set_header = header_skiprows > 0
+
+    if header_mode == "auto":
+        detected_header_row = suggest_header_row(current_data)
+        current_data = remove_header_footer(
+            current_data, detected_header_row, footer_skiprows
+        )
+        should_set_header = True
+
+        clear_screen()
+        console.print("[bold]Preview After Header Auto-Detection[/]\n")
+        console.print(
+            f"[{COLORS['secondary']}]Suggested header row:[/] {detected_header_row + 1}"
+        )
+        display_dataframe_preview(
+            current_data.head(10), "After suggested header detection", max_rows=10
+        )
+        console.print()
+    elif header_skiprows > 0 or footer_skiprows > 0:
         current_data = remove_header_footer(
             current_data, header_skiprows, footer_skiprows
         )
@@ -522,10 +592,13 @@ def create_preset_menu() -> None:
             console.print()
 
     # Set header from first row if needed
-    should_set_header = confirm_input("Use first row as column headers?", default=True)
-
-    if should_set_header is None:
-        return
+    if header_mode == "fixed":
+        should_set_header_input = confirm_input(
+            "Use first row as column headers?", default=header_skiprows > 0
+        )
+        if should_set_header_input is None:
+            return
+        should_set_header = should_set_header_input
 
     if should_set_header:
         if len(current_data) > 0:
@@ -667,19 +740,21 @@ def create_preset_menu() -> None:
         header_skiprows=header_skiprows,
         footer_skiprows=footer_skiprows,
         del_rows_with=del_rows_with,
+        header_mode=header_mode,
     )
 
     # Show final preview
     try:
-        preview_data = preview_conversion(
+        preview_result = preview_conversion(
             raw_data, preset, set_header=should_set_header
         )
 
         clear_screen()
         console.print("[bold]Final Preview[/]\n")
         display_dataframe_preview(
-            preview_data.head(5), "YNAB Format Preview", max_rows=5
+            preview_result.data.head(5), "YNAB Format Preview", max_rows=5
         )
+        display_conversion_warnings(preview_result.warnings)
 
         # Ask to save
         console.print(f"\n[{COLORS['secondary']}]Save this preset?[/]")
@@ -702,6 +777,8 @@ def create_preset_menu() -> None:
                 update_config_value("active_preset", preset_key)
                 console.print(f"[{COLORS['success']}]✓ Preset set as active![/]")
 
+    except ConversionError as e:
+        display_conversion_diagnostics(e)
     except Exception as e:
         console.print(f"\n[{COLORS['error']}]Error generating preview:[/] {e!s}")
 

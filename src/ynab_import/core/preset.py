@@ -12,3 +12,4 @@ class Preset:
     header_skiprows: int
     footer_skiprows: int
     del_rows_with: list[str]
+    header_mode: str = "fixed"
