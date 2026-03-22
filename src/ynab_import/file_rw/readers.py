@@ -121,6 +121,7 @@ def read_presets_file(path: Path) -> dict[str, Preset]:
                 header_skiprows=int(preset_config["header_skiprows"]),
                 footer_skiprows=int(preset_config["footer_skiprows"]),
                 del_rows_with=[str(v) for v in preset_config["del_rows_with"]],
+                header_mode=str(preset_config.get("header_mode", "fixed")),
             )
             presets[preset_key] = preset
 

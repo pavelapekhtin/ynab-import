@@ -32,3 +32,8 @@ Created the repo-local `.llm/` context system so future LLM sessions can recover
 - No formal YNAB external spec is stored in the repo, so output semantics are inferred from current code/tests.
 - Release workflow docs describe a `staging` -> `main` process, but local history shows that commit style enforcement has not been perfectly consistent.
 - Sandbox restrictions can make `uv run ...` verification fail even when code is fine; future sessions should distinguish environment failures from code regressions.
+
+## Follow-Up Context
+
+- Presets now also carry `header_mode` so agents should treat preset JSON as a backward-compatible evolving schema.
+- The conversion pipeline now emits structured warnings/errors and normalizes locale-specific amount strings before YNAB mapping.

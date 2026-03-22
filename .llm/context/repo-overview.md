@@ -38,9 +38,13 @@ Treat `src/ynab_import/cli/menus.py` plus the console script in `pyproject.toml`
 - `src/ynab_import/core/clean_input.py`
   Header/footer trimming, row deletion by text match, optional header promotion.
 - `src/ynab_import/core/data_converter.py`
-  Maps cleaned data into YNAB columns, splits a signed amount column when mapped to both `Inflow` and `Outflow`, formats dates, drops unmapped columns.
+  Maps cleaned data into YNAB columns, normalizes locale-specific amount strings, splits a signed amount column when mapped to both `Inflow` and `Outflow`, formats dates, and drops unmapped columns.
+- `src/ynab_import/core/header_detection.py`
+  Detects likely header rows for presets using persisted auto-detect mode.
+- `src/ynab_import/core/diagnostics.py`
+  Structured conversion warnings/errors plus sanitized data excerpts for CLI reporting.
 - `src/ynab_import/core/pipeline.py`
-  Orchestrates read -> clean -> convert -> write, plus non-persistent preview conversion.
+  Orchestrates read -> header strategy -> clean -> convert -> write, plus preview conversion with warnings and structured errors.
 
 ### File I/O layer
 
@@ -59,8 +63,10 @@ Treat `src/ynab_import/cli/menus.py` plus the console script in `pyproject.toml`
 - This is a local desktop CLI, not a service or API-backed app.
 - User state lives outside the repo in the platform config dir from `platformdirs.user_config_dir("ynab-converter")`.
 - Presets are stored as JSON and config as TOML. The app assumes both are user-editable artifacts.
+- Presets can now use either fixed header skipping or persisted auto-detect header mode with fallback.
 - The conversion flow is intentionally tolerant of messy CSV input and falls back to lenient parsing before giving a diagnostic error.
 - The UI supports choosing either separate inflow/outflow columns or a single signed amount column.
+- Amount columns may arrive as locale-formatted strings; normalization now happens in the core conversion layer rather than being left to pandas defaults.
 - `README.md` mentions YNAB CSV output generally; the code is the source of truth for exact column ordering and transformations.
 
 ## Implementation Notes

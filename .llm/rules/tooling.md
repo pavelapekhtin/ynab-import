@@ -21,7 +21,7 @@
 ## Practical Verification Habits
 
 - For conversion logic changes, run at least:
-  - `uv run pytest tests/test_data_converter.py tests/test_clean_input.py tests/test_csv_diagnostics.py`
+  - `uv run pytest tests/test_data_converter.py tests/test_clean_input.py tests/test_csv_diagnostics.py tests/test_pipeline.py`
 - For config or persistence changes, run at least:
   - `uv run pytest tests/test_config.py tests/test_writers.py`
 - For entrypoint/version changes, run at least:

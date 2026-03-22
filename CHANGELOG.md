@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- auto-detect header row mode for presets, with fallback to saved `header_skiprows`
+- structured conversion diagnostics with stage, expected-vs-actual details, and compact data excerpts
+- pipeline and regression tests for diagnostics and persisted header detection
+
+### Changed
+
+- amount parsing now accepts common locale-specific string formats such as `1,234.56`, `1.234,56`, spaced thousands separators, currency symbols, and accounting negatives
+- preset creation flow now lets users choose fixed header rows or persisted auto-detect mode
+- preset JSON schema now includes `header_mode` while remaining backward compatible with existing presets
+
 
 ### Added
 
@@ -43,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Configuration
 
-- Config location: `~/.config/ynab-import/config.toml`
-- Presets location: `~/.config/ynab-import/presets/presets.json`
+- Config location: `~/.config/ynab-converter/config.toml`
+- Presets location: `~/.config/ynab-converter/presets/presets.json`
 - Default export path: `~/Downloads/ynab-exports/`
 
 [Unreleased]: https://github.com/pavelapekhtin/ynab-import/compare/v0.1.0...HEAD

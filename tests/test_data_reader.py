@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import json
+import tempfile
 
 import pytest
 
@@ -61,3 +62,27 @@ def test_read_presets_file_invalid_json() -> None:
     finally:
         # Cleanup
         invalid_json_path.unlink()
+
+
+@pytest.mark.unit
+def test_read_presets_file_defaults_header_mode_for_legacy_json() -> None:
+    """Test legacy presets without header_mode default to fixed."""
+    preset_json = {
+        "legacy": {
+            "name": "Legacy Preset",
+            "column_mappings": {"Date": "Date", "Outflow": "Amount"},
+            "header_skiprows": 1,
+            "footer_skiprows": 0,
+            "del_rows_with": [],
+        }
+    }
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as file:
+        json.dump(preset_json, file)
+        preset_path = Path(file.name)
+
+    try:
+        presets = read_presets_file(preset_path)
+        assert presets["legacy"].header_mode == "fixed"
+    finally:
+        preset_path.unlink()

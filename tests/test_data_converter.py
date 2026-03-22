@@ -7,8 +7,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import pandas as pd
+import pytest
 
-from ynab_import.core.data_converter import convert_to_ynab
+from ynab_import.core.data_converter import AmountParseError, convert_to_ynab
 from ynab_import.core.preset import Preset
 
 
@@ -530,3 +531,88 @@ class TestConvertToYnab:
         # Invalid dates should remain as NaT/NaN strings
         assert pd.isna(result.iloc[0]["Date"]) or result.iloc[0]["Date"] == "NaT"
         assert pd.isna(result.iloc[2]["Date"]) or result.iloc[2]["Date"] == "NaT"
+
+    def test_single_amount_column_locale_strings_are_normalized(self) -> None:
+        """Test locale-formatted strings in a shared amount column."""
+        input_df = pd.DataFrame(
+            {
+                "Date": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04"],
+                "Amount": ["1,234.56", "1.234,56", "1 234,56", "($123.45)"],
+                "Description": ["A", "B", "C", "D"],
+            }
+        )
+
+        preset = Preset(
+            name="test",
+            column_mappings={
+                "Date": "Date",
+                "Payee": "Description",
+                "Inflow": "Amount",
+                "Outflow": "Amount",
+            },
+            header_skiprows=0,
+            footer_skiprows=0,
+            del_rows_with=[],
+        )
+
+        result = convert_to_ynab(input_df, preset)
+
+        assert result.iloc[0]["Inflow"] == pytest.approx(1234.56)
+        assert result.iloc[1]["Inflow"] == pytest.approx(1234.56)
+        assert result.iloc[2]["Inflow"] == pytest.approx(1234.56)
+        assert result.iloc[3]["Outflow"] == pytest.approx(123.45)
+
+    def test_separate_amount_columns_locale_strings_are_normalized(self) -> None:
+        """Test locale-formatted strings in separately mapped amount columns."""
+        input_df = pd.DataFrame(
+            {
+                "Date": ["2023-01-01", "2023-01-02"],
+                "Income": ["1.234,56", ""],
+                "Expense": ["", "-123,45"],
+                "Description": ["Salary", "Groceries"],
+            }
+        )
+
+        preset = Preset(
+            name="test",
+            column_mappings={
+                "Date": "Date",
+                "Payee": "Description",
+                "Inflow": "Income",
+                "Outflow": "Expense",
+            },
+            header_skiprows=0,
+            footer_skiprows=0,
+            del_rows_with=[],
+        )
+
+        result = convert_to_ynab(input_df, preset)
+
+        assert result.iloc[0]["Inflow"] == pytest.approx(1234.56)
+        assert pd.isna(result.iloc[0]["Outflow"])
+        assert result.iloc[1]["Outflow"] == pytest.approx(-123.45)
+
+    def test_invalid_amount_string_raises_parse_error(self) -> None:
+        """Test invalid locale amount strings raise a parse error."""
+        input_df = pd.DataFrame(
+            {
+                "Date": ["2023-01-01"],
+                "Amount": ["12-34"],
+                "Description": ["Broken"],
+            }
+        )
+
+        preset = Preset(
+            name="test",
+            column_mappings={
+                "Date": "Date",
+                "Payee": "Description",
+                "Outflow": "Amount",
+            },
+            header_skiprows=0,
+            footer_skiprows=0,
+            del_rows_with=[],
+        )
+
+        with pytest.raises(AmountParseError):
+            convert_to_ynab(input_df, preset)

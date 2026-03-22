@@ -79,6 +79,7 @@ def write_presets_json(output_path: Path, presets: dict[str, Preset]) -> Path:
             "header_skiprows": preset.header_skiprows,
             "footer_skiprows": preset.footer_skiprows,
             "del_rows_with": preset.del_rows_with,
+            "header_mode": preset.header_mode,
         }
 
     # Write to JSON file with proper formatting

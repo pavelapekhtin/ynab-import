@@ -11,6 +11,7 @@
 - `header_skiprows: int`
 - `footer_skiprows: int`
 - `del_rows_with: list[str]`
+- `header_mode: str`
 
 This shape is serialized into `presets.json` and read back without schema migration. Any change here is a user-data compatibility change.
 
@@ -35,6 +36,8 @@ Cleaning means:
 - Remove any row containing any string in `del_rows_with`.
 - Optionally promote the first remaining row to column headers.
 
+If `header_mode == "auto"`, the pipeline first tries to detect the header row from mapped source column names. If detection fails, it falls back to the saved `header_skiprows` value and emits a warning.
+
 Text deletion is currently case-sensitive because it uses `str.contains()` with default case handling. Changing that would be user-visible.
 
 ### Column mapping semantics
@@ -56,6 +59,8 @@ If both `Inflow` and `Outflow` map to the same source column, the app interprets
 - the original source column is removed after splitting
 
 If only one of `Inflow` or `Outflow` maps to a source column, values pass through as-is even if signs look unusual.
+
+Before these semantics are applied, mapped amount columns are normalized from common locale-specific string formats when possible.
 
 ### Output CSV contract
 
@@ -94,11 +99,14 @@ Non-interactive CLI behavior is minimal:
 
 All other normal behavior is interactive menu-driven flow from `main_menu()`.
 
+When preview or conversion fails, the CLI should prefer structured diagnostics over raw tracebacks.
+
 ## Data and Domain Meaning
 
 - The app does not categorize transactions for YNAB; it only reshapes bank exports into YNAB import columns.
 - Presets represent bank-export format knowledge, not a specific account or budget.
 - Preview behavior is important because users rely on it to validate header trimming and column mapping before conversion.
+- Preview behavior is also where header auto-detect and amount parsing issues should be exposed before users save or reuse a preset.
 - CSV parsing is intentionally defensive because bank exports may include BOMs, semicolon delimiters, inconsistent lines, and malformed rows.
 
 ## What Must Not Change Silently
@@ -106,6 +114,7 @@ All other normal behavior is interactive menu-driven flow from `main_menu()`.
 - Preset JSON shape.
 - Config file keys and default export path behavior.
 - Single-amount-column split semantics.
+- Locale-aware amount normalization for mapped numeric columns.
 - Column order filtering to YNAB-relevant columns.
 - Version flag behavior on the CLI.
 - The app’s tolerance strategy for imperfect CSVs.
